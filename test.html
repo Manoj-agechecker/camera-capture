@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera Capture Without Canvas</title>
+  <style>
+    video, img {
+      width: 100%;
+      max-width: 480px;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Camera Photo Capture (No Canvas)</h2>
+
+  <video autoplay></video><br>
+  <button onclick="onGetUserMediaButtonClick()">Start Camera</button>
+  <button id="takePhotoButton" onclick="onTakePhotoButtonClick()" disabled>Take Photo</button><br>
+  <img id="photoPreview" alt="Captured Photo Will Appear Here">
+
+  <script>
+    let imageCapture;
+
+    function onGetUserMediaButtonClick() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(mediaStream => {
+          const video = document.querySelector('video');
+          video.srcObject = mediaStream;
+
+          const track = mediaStream.getVideoTracks()[0];
+          imageCapture = new ImageCapture(track);
+        })
+        .catch(error => console.error('Error accessing camera:', error));
+    }
+
+    function onTakePhotoButtonClick() {
+      if (!imageCapture) {
+        console.error('Camera not started or ImageCapture not initialized.');
+        return;
+      }
+
+      imageCapture.takePhoto()
+        .then(blob => {
+          const imgURL = URL.createObjectURL(blob);
+          document.querySelector('#photoPreview').src = imgURL;
+        })
+        .catch(error => console.error('Error taking photo:', error));
+    }
+
+    document.querySelector('video').addEventListener('play', () => {
+      document.querySelector('#takePhotoButton').disabled = false;
+    });
+  </script>
+
+</body>
+</html>
